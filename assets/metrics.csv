@@ -1,0 +1,7 @@
+model,backend,prompt_tps,generation_tps,prompt_sd,generation_sd,prompt_tokens,generation_tokens,repetitions
+Gemma 4 E2B Q8_0,CPU,39.26,8.94,0.36,0.00,64,32,2
+Gemma 4 E2B Q8_0,NPU,59.10,5.14,1.94,0.03,64,32,2
+Gemma 4 E2B Q8_0,GPU,6.91,5.26,0.01,0.02,64,32,2
+Qwen3-14B Q6_K,CPU,5.19,1.66,0.01,0.00,32,16,2
+Qwen3-14B Q6_K,NPU,2.46,1.13,0.01,0.01,32,16,2
+Qwen3-14B Q6_K,GPU,0.45,0.95,0.00,0.03,32,16,2

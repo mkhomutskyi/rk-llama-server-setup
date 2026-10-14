@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Optional, isolated downloads. Does not install system libraries or services.
+set -euo pipefail
+umask 022
+base=${1:-"$HOME/edge-ai"}
+mkdir -p "$base"/{archives,models,lib}
+cd "$base"
+fetch() {
+  local name=$1 url=$2 sha=$3
+  if test -e "$name"; then
+    printf '%s  %s\n' "$sha" "$name" | sha256sum -c -
+    return
+  fi
+  curl -fL --retry 3 --connect-timeout 20 --max-time 900 -o "$name.part" "$url"
+  printf '%s  %s\n' "$sha" "$name.part" | sha256sum -c -
+  mv -n "$name.part" "$name"
+}
+fetch models/tinyllama.Q8_0.gguf \
+  https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/52e7645ba7c309695bec7ac98f4f005b139cf465/tinyllama-1.1b-chat-v1.0.Q8_0.gguf \
+  a4c9bb1dbaa372f6381a035fa5c02ef087aaa1ff1f843a56a22328114f03fc59
+fetch archives/sherpa.tar.bz2 \
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-v1.13.8-rknn-linux-aarch64-shared.tar.bz2 \
+  6fa85c2615feb5d3e501cbeee00f6f321720164ea50239683e7c37a3baea8353
+fetch archives/sensevoice-rknn.tar.bz2 \
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-rk3588-20-seconds-sense-voice-zh-en-ja-ko-yue-2024-07-17.tar.bz2 \
+  e09862afb8aa3ed15947504a54662977e1352fcadd2bd143e87cd999e56a119b
+fetch archives/sensevoice-cpu.tar.bz2 \
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2024-07-17.tar.bz2 \
+  7d1efa2138a65b0b488df37f8b89e3d91a60676e416f515b952358d83dfd347e
+fetch archives/zipformer-rknn.tar.bz2 \
+  https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-rk3588-streaming-zipformer-small-bilingual-zh-en-2023-02-16.tar.bz2 \
+  738aeb2ba4e3fe1e2d5d42a421c3e90e889e93c555a83f3a3d740fd0c6827d72
+fetch lib/librknnrt.so \
+  https://raw.githubusercontent.com/airockchip/rknn-toolkit2/7efa763d1da04c4c4447fa5632dc2d9c94fb3063/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so \
+  1170e5f99f2db7ed4d3a4c2bdbed941b7363bd090e0c28b4e210f40614327911
+for archive in archives/*.tar.bz2; do
+  folder=$(tar -tjf "$archive" | awk 'NR==1 {split($0,a,"/"); print a[1]}')
+  test -n "$folder"
+  if ! test -d "$folder"; then
+    tar --no-same-owner -xjf "$archive"
+  fi
+done
+echo "Verified examples in $base. System runtime and boot services unchanged."

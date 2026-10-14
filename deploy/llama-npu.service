@@ -1,0 +1,23 @@
+[Unit]
+Description=Rockchip NPU GGUF inference server
+After=network.target
+RequiresMountsFor=/srv/ai-models
+
+[Service]
+Type=simple
+User=ai
+SupplementaryGroups=video render
+WorkingDirectory=/var/cache/rk-llama
+Environment=HOME=/var/cache/rk-llama
+Environment=XDG_CACHE_HOME=/var/cache/rk-llama
+ExecStart=/opt/rk-llama.cpp/build/bin/llama-server --models-dir /srv/ai-models --models-max 1 --host 127.0.0.1 --port 11436 -t 4 --n-gpu-layers 999 --ctx-size 4096 --sleep-idle-seconds 300
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=102400
+CPUAffinity=4 5 6 7
+NoNewPrivileges=true
+ProtectHome=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

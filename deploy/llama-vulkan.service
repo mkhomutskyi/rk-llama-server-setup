@@ -1,0 +1,26 @@
+[Unit]
+Description=Experimental Mali Vulkan GGUF inference server
+After=network.target
+Conflicts=llama-npu.service llama-cpu.service
+RequiresMountsFor=/srv/ai-models /opt/rk-mali-vulkan
+
+[Service]
+Type=simple
+User=ai
+SupplementaryGroups=video render
+WorkingDirectory=/var/cache/rk-llama
+Environment=HOME=/var/cache/rk-llama
+Environment=XDG_CACHE_HOME=/var/cache/rk-llama
+Environment=LD_LIBRARY_PATH=/opt/rk-mali-vulkan/extracted/usr/lib/aarch64-linux-gnu/mali:/opt/rk-mali-vulkan/extracted/usr/lib/aarch64-linux-gnu
+Environment=VK_DRIVER_FILES=/opt/rk-mali-vulkan/extracted/usr/share/vulkan/icd.d/mali.json
+ExecStart=/opt/rk-llama.cpp/build-vulkan/bin/llama-server --models-dir /srv/ai-models --models-max 1 --host 127.0.0.1 --port 11436 --device Vulkan0 --n-gpu-layers 999 --no-kv-offload --no-op-offload -t 4 --ctx-size 512 -b 64 -ub 64 --sleep-idle-seconds 300
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=102400
+CPUAffinity=4 5 6 7
+NoNewPrivileges=true
+ProtectHome=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

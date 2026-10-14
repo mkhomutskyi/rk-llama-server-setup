@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Existing running service only; no installation, deletion or restart.
+set -euo pipefail
+if [[ $# != 1 || -z "$1" ]]; then
+  echo "Usage: bash $0 MODEL_ID" >&2
+  exit 2
+fi
+base=${LLAMA_API_BASE:-http://127.0.0.1:11436}
+payload=$(python3 - "$1" <<'PY'
+import json, sys
+print(json.dumps({
+    'model': sys.argv[1],
+    'messages': [{'role': 'user', 'content': 'Reply with exactly: NPU reinstall passed'}],
+    'chat_template_kwargs': {'enable_thinking': False},
+    'max_tokens': 64,
+    'temperature': 0,
+}))
+PY
+)
+curl -fsS --max-time 600 "$base/v1/chat/completions" \
+  -H 'Content-Type: application/json' --data-binary "$payload" |
+python3 -c '
+import json, sys
+r = json.load(sys.stdin)
+text = r["choices"][0]["message"]["content"].strip()
+if text != "NPU reinstall passed":
+    print("FAIL: unexpected reply:", repr(text), file=sys.stderr)
+    sys.exit(1)
+print("PASS:", r.get("model"), repr(text))
+print("Timings:", r.get("timings", {}))
+print("API reply only: confirm actual NPU activity separately.")
+'

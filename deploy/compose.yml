@@ -1,0 +1,16 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:v0.11.4-slim@sha256:0487ad4a5a4b986062dedace806c3ef1e88fec38c10d1e64d6a5501c66671e5e
+    container_name: open-webui
+    network_mode: host
+    environment:
+      HOST: 0.0.0.0
+      PORT: '3000'
+      OPENAI_API_BASE_URL: http://127.0.0.1:11436/v1
+      OPENAI_API_KEY: local-not-a-cloud-key
+      ENABLE_OLLAMA_API: 'false'
+      WEBUI_AUTH: 'true'
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:?Set fresh secret in .env}
+    volumes:
+      - /srv/open-webui:/app/backend/data
+    restart: unless-stopped

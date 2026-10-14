@@ -1,0 +1,28 @@
+# local-only artifacts
+*.gguf
+*.bin
+*.safetensors
+hf-cache/
+models/
+.venv/
+__pycache__/
+*.pyc
+
+# editor
+.vscode/
+.idea/
+*.swp
+
+# os
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+
+# Deployment secrets and private state
+.env
+.env.*
+private-preservation/
+*.key
+webui.db*
